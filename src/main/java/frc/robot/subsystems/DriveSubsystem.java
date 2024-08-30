@@ -20,6 +20,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -30,6 +31,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
@@ -155,7 +157,19 @@ public class DriveSubsystem extends SubsystemBase {
      *                      field.
      * @param rateLimit     Whether to enable rate limiting for smoother control.
      */
-    public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative, boolean rateLimit) {
+    public void drive(double xSpeed,
+            double ySpeed,
+            double rot,
+            boolean fieldRelative,
+            boolean rateLimit,
+            boolean squareInput) {
+
+        if (squareInput) {
+            xSpeed = squareAxis(xSpeed);
+            ySpeed = squareAxis(ySpeed);
+            rot = squareAxis(rot);
+        }
+
         double xSpeedCommanded;
         double ySpeedCommanded;
 
@@ -219,6 +233,10 @@ public class DriveSubsystem extends SubsystemBase {
         }
 
         drive(new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered), fieldRelative);
+    }
+
+    private double squareAxis(double axis) {
+        return Math.copySign(axis * axis, axis);
     }
 
     private void driveRobotRelative(ChassisSpeeds speeds) {
@@ -329,5 +347,28 @@ public class DriveSubsystem extends SubsystemBase {
 
         // Create a path following command using AutoBuilder. This will also trigger event markers.
         return AutoBuilder.followPath(path);
+    }
+
+    public Command cmdDriveStd(double xSpeed, double ySpeed, double rot, boolean fieldRelative, boolean rateLimit)
+    {
+        return new RunCommand(
+            () -> drive(
+                    -MathUtil.applyDeadband(xSpeed, DriveConstants.kDriveDeadband),
+                    -MathUtil.applyDeadband(ySpeed, DriveConstants.kDriveDeadband),
+                    -MathUtil.applyDeadband(rot, DriveConstants.kDriveDeadband),
+                    false, false, false),
+            this);
+    }
+
+    
+    public Command cmdDriveSqd(double xSpeed, double ySpeed, double rot, boolean fieldRelative, boolean rateLimit)
+    {
+        return new RunCommand(
+            () -> drive(
+                    -MathUtil.applyDeadband(xSpeed, DriveConstants.kDriveDeadband),
+                    -MathUtil.applyDeadband(ySpeed, DriveConstants.kDriveDeadband),
+                    -MathUtil.applyDeadband(rot, DriveConstants.kDriveDeadband),
+                    false, false, true),
+            this);
     }
 }

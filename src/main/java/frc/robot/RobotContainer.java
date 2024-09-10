@@ -5,7 +5,9 @@
 package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import frc.robot.Constants.OIConstants;
 import frc.robot.libraries.ConsoleAuto;
 import frc.robot.subsystems.AutonomousSubsystem;
@@ -30,6 +32,7 @@ public class RobotContainer {
 
   // The driver's controller
   CommandXboxController m_driverController = new CommandXboxController(OIConstants.kDriverControllerPort);
+  private final GenericHID m_driverHID = m_driverController.getHID();
 
   private final ConsoleAuto m_consoleAuto =
       new ConsoleAuto(OIConstants.kAUTONOMOUS_CONSOLE_PORT);
@@ -73,12 +76,13 @@ public class RobotContainer {
             m_robotDrive));
 
     m_driverController.rightBumper()
-      .whileTrue(
+      .whileTrue(Commands.parallel(
                 m_robotDrive.cmdDriveSqd(
                 m_driverController.getLeftY(),
                 m_driverController.getLeftX(),
                 m_driverController.getRightX(),
-                false, false)
+                false, false),
+                Commands.run(() -> m_driverHID.setRumble(RumbleType.kBothRumble, 0.2)))
       );
 
     runAutoConsoleFalse();

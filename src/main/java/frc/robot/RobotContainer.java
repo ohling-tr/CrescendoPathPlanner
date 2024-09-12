@@ -51,11 +51,19 @@ public class RobotContainer {
     m_robotDrive.setDefaultCommand(
         // The left stick controls translation of the robot.
         // Turning is controlled by the X axis of the right stick.
-        m_robotDrive.cmdDriveStd(
+        new RunCommand(
+            () -> m_robotDrive.drive(
+                -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
+                -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
+                -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
+                false, false, false),
+            m_robotDrive)
+/*        m_robotDrive.cmdDriveStd(
                 m_driverController.getLeftY(),
                 m_driverController.getLeftX(),
                 m_driverController.getRightX(),
                 false, false)
+*/
         );
   }
 
@@ -77,11 +85,13 @@ public class RobotContainer {
 
     m_driverController.rightBumper()
       .whileTrue(Commands.parallel(
-                m_robotDrive.cmdDriveSqd(
-                m_driverController.getLeftY(),
-                m_driverController.getLeftX(),
-                m_driverController.getRightX(),
-                false, false),
+          new RunCommand(
+            () -> m_robotDrive.drive(
+                -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
+                -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
+                -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
+                false, false, true),
+            m_robotDrive),
                 Commands.run(() -> m_driverHID.setRumble(RumbleType.kBothRumble, 0.2)))
       );
 

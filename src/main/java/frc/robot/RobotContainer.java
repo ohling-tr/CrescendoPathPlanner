@@ -84,16 +84,17 @@ public class RobotContainer {
             m_robotDrive));
 
     m_driverController.rightBumper()
-      .whileTrue(Commands.parallel(
+      .whileTrue(
           new RunCommand(
             () -> m_robotDrive.drive(
                 -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
                 -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
                 -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
                 false, false, true),
-            m_robotDrive),
-                Commands.run(() -> m_driverHID.setRumble(RumbleType.kBothRumble, 0.2)))
-      );
+            m_robotDrive)
+      )
+      //.whileFalse(() -> m_driverHID.setRumble(RumbleType.kBothRumble, 0.0))
+      ;
 
     runAutoConsoleFalse();
     //new Trigger(DriverStation::isDisabled)
